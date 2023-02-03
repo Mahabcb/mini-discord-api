@@ -2,18 +2,23 @@
 
 namespace App\Entity;
 
+use App\Entity\Message;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Post;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\ChannelRepository;
 use ApiPlatform\Metadata\GetCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
     paginationItemsPerPage: 2,
 )]
+#[ApiFilter(SearchFilter::class, properties: ['name' => 'partial'])]
 #[GetCollection]
 #[Get]
 #[Post]
@@ -25,6 +30,13 @@ class Channel
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Assert\NotBlank(message: 'Le nom du channel est obligatoire')]
+    #[Assert\Length(
+        min: 3,
+        max: 30,
+        minMessage: 'Le nom du channel doit faire au moins {{ limit }} caractères',
+        maxMessage: 'Le nom du channel ne doit pas faire au plus {{ limit }} caractères',
+    )]
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 

@@ -2,26 +2,37 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Metadata\ApiResource;
-use App\Repository\MessageRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiResource;
+use App\Repository\MessageRepository;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use Symfony\Component\Serializer\Annotation\Groups;
 
-#[ApiResource()]
+#[ApiResource(
+    normalizationContext: ['groups' => ['message:read']],
+    denormalizationContext: ['groups' => ['message:write']],
+)]
+#[ApiFilter(OrderFilter::class, properties: ['createdAt' => 'DESC'])]
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
 class Message
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['message:read'])]
     private ?int $id = null;
 
+    #[Groups(['message:read', 'message:write'])]
     #[ORM\Column(type: Types::TEXT)]
     private ?string $content = null;
 
+    #[Groups(['message:read'])]
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTime $createdAt = null;
 
+    #[Groups(['message:read', 'message:write'])]
     #[ORM\ManyToOne(inversedBy: 'messages')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Channel $channel = null;
